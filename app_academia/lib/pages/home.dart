@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import '../components/btn_ajuda.dart';
-import './treino.dart';
+import '../components/navegacao.dart';
 
+// Páginas
+import 'perfil.dart';
+import 'treino.dart';
 
 void main() {
   runApp(const MyApp()); // Inicia o app Flutter
 }
 
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
 
   @override
   Widget build(BuildContext context) {
@@ -25,20 +26,16 @@ class MyApp extends StatelessWidget {
   }
 }
 
-
 // Página principal do app
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
-
 
   @override
   State<HomePage> createState() => _HomePageState(); // Estado da página principal
 }
 
-
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0; // Índice da página selecionada na barra de navegação
-
 
   // Lista de páginas para navegação
   final List<Widget> _pages = [
@@ -46,9 +43,8 @@ class _HomePageState extends State<HomePage> {
     const WorkoutScreen(),
     const NutritionScreen(),
     const ChallengeScreen(),
-    const ProfileScreen(),
+    const MeuPerfil(),
   ];
-
 
   // Função que é chamada quando um item da barra de navegação é selecionado
   void _onItemTapped(int index) {
@@ -56,7 +52,6 @@ class _HomePageState extends State<HomePage> {
       _selectedIndex = index; // Atualiza o índice da página selecionada
     });
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -66,45 +61,17 @@ class _HomePageState extends State<HomePage> {
         index: _selectedIndex, // Exibe a página baseada no índice selecionado
         children: _pages, // Páginas que serão exibidas
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex, // Define o índice da barra de navegação
-        onTap:
-            _onItemTapped, // Função chamada ao selecionar um item da barra de navegação
-        selectedItemColor: Color(0xFFF84600), // Cor do item selecionado
-        unselectedItemColor: Colors.grey, // Cor dos itens não selecionados
-        type: BottomNavigationBarType.fixed, // Tipo da barra de navegação
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: '',
-          ), // Ícone de página inicial
-          BottomNavigationBarItem(
-            icon: Icon(Icons.fitness_center),
-            label: '',
-          ), // Ícone de treino
-          BottomNavigationBarItem(
-            icon: Icon(Icons.restaurant),
-            label: '',
-          ), // Ícone de nutrição
-          BottomNavigationBarItem(
-            icon: Icon(Icons.casino),
-            label: '',
-          ), // Ícone de desafios
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: '',
-          ), // Ícone de perfil
-        ],
+      bottomNavigationBar: MenuDeNavegacao(
+        selectedIndex: _selectedIndex,
+        onItemTapped: _onItemTapped,
       ),
     );
   }
 }
 
-
 // Tela inicial com um exemplo de conteúdo
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
-
 
   @override
   Widget build(BuildContext context) {
@@ -113,26 +80,24 @@ class HomeScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent, // Barra de app transparente
         elevation: 0,
-        actions: [
-          BotaoDuvida()
-        ], // Sem sombra na AppBar
+        actions: [BotaoDuvida()], // Sem sombra na AppBar
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 30),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             const SizedBox(height: 10),
             const Text(
-              'Seja Bem vindo, Teste!',
-              style: TextStyle(fontSize: 18),
+              'Seja bem vindo, Teste!',
+              style: TextStyle(fontSize: 24),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
             const Text(
               'Você tem uma sequência de\n5 dias!',
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 18,
                 color: Color(0xFFF84600),
                 fontWeight: FontWeight.bold,
               ),
@@ -141,55 +106,110 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: 10),
             const Icon(
               Icons.local_fire_department,
-              color: Colors.orange,
-              size: 40,
+              color: Color(0xFFF84600),
+              size: 90,
             ), // Ícone de motivação
             const SizedBox(height: 5),
             const Text('Continue assim! 😁'),
             const SizedBox(height: 30),
+
             // Card para visualizar o treino do dia
             Card(
+              color: Colors.white,
               elevation: 2,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: ListTile(
-                title: const Text.rich(
-                  TextSpan(
-                    text: 'Visualize seu treino de ',
-                    children: [
-                      TextSpan(
-                        text: 'hoje',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ],
+              child: InkWell(
+                onTap: () {
+                  // FAZER O TREINO APARECER QUANDO CLICAR AQUI
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const TreinoDoDiaScreen(),
+                    ),
+                  );
+                },
+                child: SizedBox(
+                  height: 120,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 25),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // Texto expansível que pode quebrar linha
+                        Expanded(
+                          child: Text.rich(
+                            TextSpan(
+                              text: 'Visualize seu treino de ',
+                              children: [
+                                TextSpan(
+                                  text: 'hoje ',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                TextSpan(text: '➔'),
+                              ],
+                            ),
+                            style: const TextStyle(fontSize: 20),
+                            softWrap: true, // Permite quebra de linha
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        const Text('💪', style: TextStyle(fontSize: 35)),
+                      ],
+                    ),
                   ),
                 ),
-                trailing: const Text('💪', style: TextStyle(fontSize: 20)),
-                onTap: () {}, // Ação ao tocar no item
               ),
             ),
             const SizedBox(height: 16),
             // Card para visualizar o cronograma alimentar
             Card(
+              color: Colors.white,
               elevation: 2,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: ListTile(
-                title: const Text.rich(
-                  TextSpan(
-                    text: 'Visualize seu\n',
-                    children: [
-                      TextSpan(
-                        text: 'cronograma alimentar',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ],
+              child: InkWell(
+                onTap: () {
+                  // FAZER O TREINO APARECER QUANDO CLICAR AQUI
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const CronogramaAlimentar(),
+                    ),
+                  );
+                },
+                child: SizedBox(
+                  height: 120,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 25),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // Texto expansível que pode quebrar linha
+                        Expanded(
+                          child: Text.rich(
+                            TextSpan(
+                              text: 'Visualize seu ',
+                              children: [
+                                TextSpan(
+                                  text: 'cronograma alimentar',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                TextSpan(text: '➔'),
+                              ],
+                            ),
+                            style: const TextStyle(fontSize: 19),
+                            softWrap: true, // Permite quebra de linha
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        const Text('🍉', style: TextStyle(fontSize: 35)),
+                      ],
+                    ),
                   ),
                 ),
-                trailing: const Text('🍉', style: TextStyle(fontSize: 20)),
-                onTap: () {}, // Ação ao tocar no item
               ),
             ),
           ],
@@ -199,13 +219,36 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
+class TreinoDoDiaScreen extends StatelessWidget {
+  const TreinoDoDiaScreen({super.key});
 
-// Outras telas do app (exemplo de páginas vazias)
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Treino do Dia')),
+      body: const Center(
+        child: Text('Treino do Dia', style: TextStyle(fontSize: 24)),
+      ),
+    );
+  }
+}
 
+class CronogramaAlimentar extends StatelessWidget {
+  const CronogramaAlimentar({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Cronograma Alimentar')),
+      body: const Center(
+        child: Text('Cronograma Alimentar', style: TextStyle(fontSize: 24)),
+      ),
+    );
+  }
+}
 
 class NutritionScreen extends StatelessWidget {
   const NutritionScreen({super.key});
-
 
   @override
   Widget build(BuildContext context) {
@@ -213,30 +256,11 @@ class NutritionScreen extends StatelessWidget {
   }
 }
 
-
 class ChallengeScreen extends StatelessWidget {
   const ChallengeScreen({super.key});
-
 
   @override
   Widget build(BuildContext context) {
     return const Center(child: Text('Challenge Screen')); // Tela de desafios
   }
 }
-
-
-class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
-
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('Profile Screen')); // Tela de perfil
-  }
-}
-
-
-
-
-
-
