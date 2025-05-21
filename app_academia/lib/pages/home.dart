@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-//import 'widgets/botao_duvida.dart';
+import '../components/btn_ajuda.dart';
+import './treino.dart';
 
 
 void main() {
@@ -113,7 +114,7 @@ class HomeScreen extends StatelessWidget {
         backgroundColor: Colors.transparent, // Barra de app transparente
         elevation: 0,
         actions: [
-          //BotaoDuvida()
+          BotaoDuvida()
         ], // Sem sombra na AppBar
       ),
       body: Padding(
@@ -200,108 +201,6 @@ class HomeScreen extends StatelessWidget {
 
 
 // Outras telas do app (exemplo de páginas vazias)
-class WorkoutScreen extends StatelessWidget {
-  const WorkoutScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
-       appBar: AppBar(
-        backgroundColor: Colors.transparent, // Barra de app transparente
-        elevation: 0,
-        actions: [
-          //BotaoDuvida()
-        ], // Sem sombra na AppBar
-      ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const SizedBox(height: 8),
-            const Text(
-              'Seus treinos!',
-              style: TextStyle(fontSize: 18),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 12),
-
-            // 📸 IMAGEM AQUI
-           // Image.asset(
-            //  'assets/minha_imagem.png',
-            //  width: 200,
-            //  height: 200,
-           //   fit: BoxFit.cover,
-          //  ),
-
-            const SizedBox(height: 12),
-
-            RichText(
-              textAlign: TextAlign.center,
-              text: const TextSpan(
-                style: TextStyle(fontSize: 16, color: Colors.black),
-                children: [
-                  TextSpan(text: 'Hoje seu treino é de '),
-                  TextSpan(
-                    text: 'pernas ',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  TextSpan(text: '🦵'),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 16),
-            Row(
-  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  children: [
-    // Primeiro Card
-    Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Container(
-        width: 150,
-        height: 50,
-        color: Colors.blue,
-        child: const Center(
-          child: Text(
-            'Caixa 1',
-            style: TextStyle(color: Colors.white),
-          ),
-        ),
-      ),
-    ),
-    // Espaço entre os Cards
-    const SizedBox(width: 8),
-    // Segundo Card
-    Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Container(
-        width: 150,
-        height: 50,
-        color: Colors.green,
-        child: const Center(
-          child: Text(
-            'Caixa 2',
-            style: TextStyle(color: Colors.white),
-          ),
-        ),
-      ),
-    ),
-  ],
-),
-
-      ),
-    );
-  }
-}
-
 
 
 class NutritionScreen extends StatelessWidget {
