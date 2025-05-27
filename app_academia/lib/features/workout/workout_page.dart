@@ -9,7 +9,7 @@ class WorkoutPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
-        backgroundColor: Colors.transparent, // Barra de app transparente
+        backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [BotaoDuvida()], // Sem sombra na AppBar
       ),
@@ -32,7 +32,6 @@ class WorkoutPage extends StatelessWidget {
               fit: BoxFit.cover,
             ),
             const SizedBox(height: 12),
-
             RichText(
               textAlign: TextAlign.center,
               text: const TextSpan(
@@ -47,71 +46,54 @@ class WorkoutPage extends StatelessWidget {
                 ],
               ),
             ),
-
             const SizedBox(height: 16),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Primeiro Card com Expanded
                 Expanded(
-                  child: Card(
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Container(
-                      height: 50,
-                      color: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: const Center(
-                        child: TextField(
-                          decoration: InputDecoration(
-                            hintText: 'Tipo do treino:',
-                            border: InputBorder.none,
-                            isDense: true,
-                            contentPadding: EdgeInsets.all(10),
-                          ),
-                        ),
+                   child: TextField(
+                    decoration: InputDecoration(
+                      labelText: 'Tipo de treino',
+                      labelStyle: const TextStyle(color: Color(0xFFF84600)),
+                      hintText: 'Digite o tipo do treino',
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: UnderlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        // Bordas arredondadas
                       ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 15,
+                        horizontal: 12,
+                      ), // Padding interno
                     ),
                   ),
                 ),
-
-                // Espaço entre os Cards
                 const SizedBox(width: 8),
-
-                // Segundo Card com Expanded
                 Expanded(
-                  child: Card(
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Container(
-                      height: 50,
-                      color: Colors.white,
-                      child: const Center(
-                        child: TextField(
-                          decoration: InputDecoration(
-                            hintText: 'Tempo de treino:',
-                            border: InputBorder.none,
-                            isDense: true,
-                            contentPadding: EdgeInsets.all(10),
-                          ),
-                          style: TextStyle(color: Colors.black),
-                        ),
+                  child: TextField(
+                    decoration: InputDecoration(
+                      labelText: 'Tempo de treino',
+                      labelStyle: const TextStyle(color: Color(0xFFF84600)),
+                      hintText: 'Digite o tempo de treino',
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: UnderlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        // Bordas arredondadas
                       ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 15,
+                        horizontal: 12,
+                      ), // Padding interno
                     ),
-                  ),
+                  )
                 ),
               ],
             ),
 
             const SizedBox(height: 23),
-
             SizedBox(
-              width: double.infinity, // Preenche toda a largura
-
+              width: double.infinity,
               height: 50,
               child: ElevatedButton(
                 onPressed: () {
@@ -121,34 +103,71 @@ class WorkoutPage extends StatelessWidget {
                 },
                 style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.white,
-                  backgroundColor: Color(0xFFF84600),
+                  backgroundColor: const Color(0xFFF84600),
                   padding: const EdgeInsets.symmetric(
                     vertical: 18,
                     horizontal: 40,
                   ),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(
-                      12,
-                    ), // Bordas mais arredondadas
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   elevation: 8,
                 ),
                 child: const Text(
                   'Registrar treino de hoje ➕',
                   style: TextStyle(
-                    fontSize: 18, // Aumentando o tamanho do texto
-                    fontWeight: FontWeight.w600, // Peso do texto
-                    letterSpacing: 1.2, // Espaçamento entre letras
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 1.2,
                   ),
                 ),
               ),
             ),
             const SizedBox(height: 23),
-
             const Text(
               'Treino da semana',
               style: TextStyle(fontSize: 18, color: Colors.black),
               textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            buildWorkoutCard(context, '24/05/2025', 'Treino de perna'),
+            const SizedBox(height: 8),
+            buildWorkoutCard(context, '25/05/2025', 'Treino de braço'),
+            const SizedBox(height: 8),
+            buildWorkoutCard(context, '26/05/2025', 'Treino de costas'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  static Widget buildWorkoutCard(
+    BuildContext context,
+    String date,
+    String workout,
+  ) {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: Row(
+          children: [
+            Expanded(
+              flex: 3,
+              child: Text(date, style: const TextStyle(fontSize: 16)),
+            ),
+            Expanded(
+              flex: 5,
+              child: Text(workout, style: const TextStyle(fontSize: 16)),
+            ),
+            IconButton(
+              icon: const Icon(Icons.edit, color: Colors.deepOrange),
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Editar treino: $workout')),
+                );
+              },
             ),
           ],
         ),
