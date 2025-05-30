@@ -11,6 +11,7 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
+
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -20,72 +21,73 @@ class _RegisterPageState extends State<RegisterPage> {
 
   String? _gender;
 
-  // Função de cadastro
-  void _register() async {
-    if (_nameController.text.isEmpty ||
-        _emailController.text.isEmpty ||
-        _passwordController.text.isEmpty ||
-        _weightController.text.isEmpty ||
-        _heightController.text.isEmpty ||
-        _objectiveController.text.isEmpty ||
-        _gender == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor, preencha todos os campos.')),
-      );
-      return;
-    }
+void _register(BuildContext context) async {
+  print('[DEBUG] Iniciando processo de cadastro...');
 
-    Map<String, dynamic> data = {
-      'nome': _nameController.text,
-      'email': _emailController.text,
-      'senha': _passwordController.text,
-      'peso': _weightController.text,
-      'altura': _heightController.text,
-      'genero': _gender!,
-      'objetivo': _objectiveController.text,
-    };
-
-    bool success = await ApiService.register(data);
-    print('Cadastro bem-sucedido? $success');
-
-    if (success) {
-      showDialog(
-        context: context,
-        barrierDismissible:
-            false, // impede o usuário de fechar o popup clicando fora
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text('✅ Sucesso'),
-            content: const Text('Cadastro realizado com sucesso!'),
-          );
-        },
-      );
-
-      // Aguarda 2 segundos e vai para tela de login
-      Future.delayed(const Duration(seconds: 2), () {
-        Navigator.of(context).pop(); // Fecha o dialog
-        Navigator.pop(context); // Volta para tela de login
-      });
-    } else {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text('❌ Erro'),
-            content: const Text('Falha ao cadastrar. Tente novamente!'),
-            actions: [
-              TextButton(
-                child: const Text('OK'),
-                onPressed: () {
-                  Navigator.of(context).pop(); // Fecha o dialog
-                },
-              ),
-            ],
-          );
-        },
-      );
-    }
+  // Verifica se há campos vazios
+  if (_nameController.text.isEmpty ||
+      _emailController.text.isEmpty ||
+      _passwordController.text.isEmpty ||
+      _weightController.text.isEmpty ||
+      _heightController.text.isEmpty ||
+      _objectiveController.text.isEmpty ||
+      _gender == null) {
+    print('[DEBUG] Campos obrigatórios não preenchidos.');
+    AwesomeDialog(
+      context: context,
+      dialogType: DialogType.warning,
+      animType: AnimType.bottomSlide,
+      title: 'Campos obrigatórios',
+      desc: 'Por favor, preencha todos os campos!',
+      btnOkOnPress: () {},
+    ).show();
+    return;
   }
+
+  // Dados capturados do formulário
+  Map<String, dynamic> data = {
+    'nome': _nameController.text,
+    'email': _emailController.text,
+    'senha': _passwordController.text,
+    'peso': _weightController.text,
+    'altura': _heightController.text,
+    'genero': _gender!,
+    'objetivo': _objectiveController.text,
+  };
+
+  print('[DEBUG] Dados para envio: $data');
+  print('[DEBUG] Chamando ApiService.register...');
+
+  bool success = await ApiService.register(data);
+
+  print('[DEBUG] Resultado do cadastro: $success');
+
+  if (success) {
+    print('[DEBUG] Cadastro realizado com sucesso!');
+    AwesomeDialog(
+      context: context,
+      dialogType: DialogType.success,
+      animType: AnimType.rightSlide,
+      title: 'Sucesso!',
+      desc: 'Cadastro realizado com sucesso!',
+      btnOkOnPress: () {
+        Navigator.pop(context); 
+      },
+    ).show();
+  } else {
+    print('[DEBUG] Falha no cadastro.');
+    AwesomeDialog(
+      context: context,
+      dialogType: DialogType.error,
+      animType: AnimType.rightSlide,
+      title: 'Erro!',
+      desc: 'Falha ao cadastrar. Tente novamente.',
+      btnOkOnPress: () {},
+    ).show();
+  }
+}
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -310,7 +312,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                     // Botão de Cadastro
                     ElevatedButton(
-                      onPressed: _register,
+                      onPressed: () => _register(context),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFF84600),
                         shape: RoundedRectangleBorder(

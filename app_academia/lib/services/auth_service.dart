@@ -28,10 +28,10 @@ class ApiService {
     );
 
     if (response.statusCode == 200) {
-      final result = jsonDecode(response.body);
+      final result = json.decode(response.body);
       return result['status'] == 'success';
     } else {
-      throw Exception('Erro de conexão');
+      return false;
     }
   }
 }
