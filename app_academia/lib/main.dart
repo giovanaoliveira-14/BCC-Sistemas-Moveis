@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'core/routes/app_routes.dart';
+import 'features/splash/splash_page.dart'; // nova tela splash
 
 void main() {
   runApp(const MyApp());
@@ -13,8 +14,11 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Fitness App',
       debugShowCheckedModeBanner: false,
-      initialRoute: AppRoutes.login,
-      routes: AppRoutes.routes,
+      initialRoute: '/splash',
+      routes: {
+        '/splash': (context) => const SplashPage(),
+        ...AppRoutes.getRoutes(),
+      },
     );
   }
 }

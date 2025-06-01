@@ -12,14 +12,16 @@ class AppRoutes {
   static const String home = '/home';
   static const String workout = '/workout';
   static const String profile = '/profile';
-  static const String nutrition = '/nutrition'; 
+  static const String nutrition = '/nutrition';
 
-  static final Map<String, WidgetBuilder> routes = {
-    login: (context) => const LoginPage(),
-    register: (context) => const RegisterPage(),
-    home: (context) => const HomePage(),
-    workout: (context) => const WorkoutPage(),
-    profile: (context) => const ProfilePage(),
-    nutrition: (context) => const NutritionPage(),
-  };
+  static Map<String, WidgetBuilder> getRoutes() {
+    return {
+      login: (context) => const LoginPage(),
+      register: (context) => const RegisterPage(),
+      home: (context) => const HomePage(),
+      workout: (context) => const WorkoutPage(),
+      nutrition: (context) => const NutritionPage(),
+      profile: (context) => const ProfilePage(), 
+    };
+  }
 }
