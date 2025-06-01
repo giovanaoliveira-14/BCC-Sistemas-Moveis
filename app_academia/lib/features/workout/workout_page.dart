@@ -1,173 +1,191 @@
 import 'package:flutter/material.dart';
+import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:app_academia/services/auth_service.dart';
 import 'package:app_academia/core/widgets/button_help.dart';
 
-class WorkoutPage extends StatelessWidget {
+class WorkoutPage extends StatefulWidget {
   const WorkoutPage({super.key});
+
+  @override
+  State<WorkoutPage> createState() => _WorkoutPageState();
+}
+
+class _WorkoutPageState extends State<WorkoutPage> {
+  final _tipoController = TextEditingController();
+  final _tempoController = TextEditingController();
+  List<Map<String, dynamic>> _treinos = [];
+  int? _userId;
+
+  @override
+  void initState() {
+    super.initState();
+    _carregarUsuarioEListarTreinos();
+  }
+
+  Future<void> _carregarUsuarioEListarTreinos() async {
+    final prefs = await SharedPreferences.getInstance();
+    _userId = prefs.getInt('user_id');
+    if (_userId != null) {
+      await _carregarTreinos();
+    }
+  }
+
+  Future<void> _carregarTreinos() async {
+    final treinos = await ApiService.listarTreinos(_userId!);
+    setState(() {
+      _treinos = treinos;
+    });
+  }
+
+  Future<void> _registrarTreino() async {
+    final tipo = _tipoController.text.trim();
+    final tempo = _tempoController.text.trim();
+
+    if (tipo.isEmpty || tempo.isEmpty) {
+      AwesomeDialog(
+        context: context,
+        dialogType: DialogType.warning,
+        title: 'Campos vazios',
+        desc: 'Preencha todos os campos para registrar o treino.',
+        btnOkOnPress: () {},
+      ).show();
+      return;
+    }
+
+    final sucesso = await ApiService.registrarTreino(
+      userId: _userId!,
+      tipo: tipo,
+      tempo: tempo,
+    );
+
+    if (sucesso) {
+      _tipoController.clear();
+      _tempoController.clear();
+      await _carregarTreinos();
+
+      AwesomeDialog(
+        context: context,
+        dialogType: DialogType.success,
+        title: 'Registrado!',
+        desc: 'Treino registrado com sucesso.',
+        btnOkOnPress: () {},
+      ).show();
+    } else {
+      AwesomeDialog(
+        context: context,
+        dialogType: DialogType.error,
+        title: 'Erro',
+        desc: 'Falha ao registrar o treino.',
+        btnOkOnPress: () {},
+      ).show();
+    }
+  }
+
+  InputDecoration _inputDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      filled: true,
+      fillColor: Colors.white,
+      labelStyle: const TextStyle(color: Color(0xFFF84600)),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 12),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: [BotaoDuvida()], // Sem sombra na AppBar
+        title: const Text(' Treino 🏃'),
+        centerTitle: true,
+        backgroundColor: Colors.deepOrange,
+          actions: const [BotaoDuvida()],
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             const Text(
-              'Seus treinos!',
-              style: TextStyle(fontSize: 18),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 12),
-            Image.asset(
-              'assets/images/Icon.png',
-              width: 100,
-              height: 100,
-              fit: BoxFit.cover,
-            ),
-            const SizedBox(height: 12),
-            RichText(
-              textAlign: TextAlign.center,
-              text: const TextSpan(
-                style: TextStyle(fontSize: 16, color: Colors.black),
-                children: [
-                  TextSpan(text: 'Hoje seu treino é de '),
-                  TextSpan(
-                    text: 'pernas ',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  TextSpan(text: '🦵'),
-                ],
-              ),
+              'Registrar treino de hoje',
+              style: TextStyle(fontSize: 20),
             ),
             const SizedBox(height: 16),
             Row(
               children: [
                 Expanded(
-                   child: TextField(
-                    decoration: InputDecoration(
-                      labelText: 'Tipo de treino',
-                      labelStyle: const TextStyle(color: Color(0xFFF84600)),
-                      hintText: 'Digite o tipo do treino',
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: UnderlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        // Bordas arredondadas
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        vertical: 15,
-                        horizontal: 12,
-                      ), // Padding interno
-                    ),
+                  child: TextField(
+                    controller: _tipoController,
+                    decoration: _inputDecoration('Tipo do treino'),
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 12),
                 Expanded(
                   child: TextField(
-                    decoration: InputDecoration(
-                      labelText: 'Tempo de treino',
-                      labelStyle: const TextStyle(color: Color(0xFFF84600)),
-                      hintText: 'Digite o tempo de treino',
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: UnderlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        // Bordas arredondadas
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        vertical: 15,
-                        horizontal: 12,
-                      ), // Padding interno
-                    ),
-                  )
+                    controller: _tempoController,
+                    decoration: _inputDecoration('Tempo (min)'),
+                    keyboardType: TextInputType.number,
+                  ),
                 ),
               ],
             ),
-
-            const SizedBox(height: 23),
+            const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Botão pressionado!')),
-                  );
-                },
+              child: ElevatedButton.icon(
+                onPressed: _registrarTreino,
+                icon: const Icon(Icons.add, color: Colors.white),
+                label: const Text(
+                  'Registrar treino',
+                  style: TextStyle(color: Colors.white),
+                ),
                 style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white,
                   backgroundColor: const Color(0xFFF84600),
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 18,
-                    horizontal: 40,
-                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: 8,
-                ),
-                child: const Text(
-                  'Registrar treino de hoje ➕',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 1.2,
                   ),
                 ),
               ),
             ),
-            const SizedBox(height: 23),
+            const SizedBox(height: 30),
             const Text(
-              'Treino da semana',
-              style: TextStyle(fontSize: 18, color: Colors.black),
-              textAlign: TextAlign.center,
+              'Treinos registrados',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 12),
-            buildWorkoutCard(context, '24/05/2025', 'Treino de perna'),
-            const SizedBox(height: 8),
-            buildWorkoutCard(context, '25/05/2025', 'Treino de braço'),
-            const SizedBox(height: 8),
-            buildWorkoutCard(context, '26/05/2025', 'Treino de costas'),
-          ],
-        ),
-      ),
-    );
-  }
-
-  static Widget buildWorkoutCard(
-    BuildContext context,
-    String date,
-    String workout,
-  ) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        child: Row(
-          children: [
+            const SizedBox(height: 10),
             Expanded(
-              flex: 3,
-              child: Text(date, style: const TextStyle(fontSize: 16)),
-            ),
-            Expanded(
-              flex: 5,
-              child: Text(workout, style: const TextStyle(fontSize: 16)),
-            ),
-            IconButton(
-              icon: const Icon(Icons.edit, color: Colors.deepOrange),
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Editar treino: $workout')),
-                );
-              },
+              child: _treinos.isEmpty
+                  ? const Center(
+                      child: Text('Nenhum treino registrado ainda.'),
+                    )
+                  : ListView.builder(
+                      itemCount: _treinos.length,
+                      itemBuilder: (context, index) {
+                        final treino = _treinos[index];
+                        return Card(
+                          elevation: 2,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: ListTile(
+                            leading: const Icon(
+                              Icons.fitness_center,
+                              color: Color(0xFFF84600),
+                            ),
+                            title: Text(treino['tipo_treino']),
+                            subtitle: Text(
+                              'Tempo: ${treino['tempo_treino']} min\nData: ${treino['data']}',
+                            ),
+                          ),
+                        );
+                      },
+                    ),
             ),
           ],
         ),

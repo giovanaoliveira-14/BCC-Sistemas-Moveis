@@ -10,6 +10,7 @@ dependencies:
   http: ^0.13.5
   flutter:
     sdk: flutter
+  shared_preferences: ^2.2.2
   cupertino_icons: ^1.0.8
   awesome_dialog: ^3.2.1
 
@@ -20,5 +21,4 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-  assets:
-    - assets/images/
+  

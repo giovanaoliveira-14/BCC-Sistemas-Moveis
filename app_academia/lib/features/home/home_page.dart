@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:app_academia/core/widgets/button_help.dart';
-import 'package:app_academia/core/widgets/menu.dart';
-import 'package:app_academia/features/profile/profile_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:app_academia/features/workout/workout_page.dart';
 import 'package:app_academia/features/nutrition/nutrition_page.dart';
-
+import 'package:app_academia/features/profile/profile_page.dart';
+import 'package:app_academia/core/widgets/menu.dart';
+import 'package:app_academia/core/widgets/button_help.dart';
+import 'package:app_academia/services/auth_service.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -15,14 +16,57 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
+  String _userName = '';
+  int _sequenciaDias = 0;
 
-  final List<Widget> _pages = [
-    const HomeScreen(),
-    const WorkoutPage(),
-    const NutritionPage(),
-    const WorkoutPage(),
-    const ProfilePage(),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _carregarNomeUsuario();
+    _calcularSequenciaTreinos();
+  }
+
+  Future<void> _carregarNomeUsuario() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _userName = prefs.getString('user_nome') ?? 'Usuário';
+    });
+  }
+
+  Future<void> _calcularSequenciaTreinos() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getInt('user_id');
+    if (userId == null) return;
+
+    final datas = await ApiService.listarDatasTreino(userId);
+    if (datas.isEmpty) {
+      setState(() {
+        _sequenciaDias = 0;
+      });
+      return;
+    }
+
+    final datasConvertidas = datas.map((e) => DateTime.parse(e)).toList();
+    datasConvertidas.sort();
+
+    int maxSeq = 0;
+    int atualSeq = 1;
+
+    for (int i = 1; i < datasConvertidas.length; i++) {
+      final diff = datasConvertidas[i].difference(datasConvertidas[i - 1]).inDays;
+      if (diff == 1) {
+        atualSeq++;
+      } else if (diff > 1) {
+        maxSeq = atualSeq > maxSeq ? atualSeq : maxSeq;
+        atualSeq = 1;
+      }
+    }
+    maxSeq = atualSeq > maxSeq ? atualSeq : maxSeq;
+
+    setState(() {
+      _sequenciaDias = maxSeq;
+    });
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -32,8 +76,19 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final List<Widget> _pages = [
+      HomeScreen(
+        userName: _userName,
+        sequenciaDias: _sequenciaDias,
+        onNavigateTo: _onItemTapped,
+      ),
+      const WorkoutPage(),
+      const NutritionPage(),
+      const WorkoutPage(),
+      const ProfilePage(),
+    ];
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
       body: IndexedStack(
         index: _selectedIndex,
         children: _pages,
@@ -47,7 +102,16 @@ class _HomePageState extends State<HomePage> {
 }
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  final String userName;
+  final int sequenciaDias;
+  final void Function(int) onNavigateTo;
+
+  const HomeScreen({
+    super.key,
+    required this.userName,
+    required this.sequenciaDias,
+    required this.onNavigateTo,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -64,15 +128,17 @@ class HomeScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             const SizedBox(height: 10),
-            const Text(
-              'Seja bem vindo, Teste!',
-              style: TextStyle(fontSize: 24),
+            Text(
+              'Seja bem-vindo, $userName! 👋',
+              style: const TextStyle(fontSize: 24),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
-            const Text(
-              'Você tem uma sequência de\n5 dias!',
-              style: TextStyle(
+            Text(
+              sequenciaDias > 0
+                  ? 'Você tem uma sequência de\n$sequenciaDias dia(s)!'
+                  : 'Você ainda não registrou treinos.',
+              style: const TextStyle(
                 fontSize: 18,
                 color: Color(0xFFF84600),
                 fontWeight: FontWeight.bold,
@@ -86,215 +152,55 @@ class HomeScreen extends StatelessWidget {
               size: 90,
             ),
             const SizedBox(height: 5),
-            const Text('Continue assim! 😁'),
             const SizedBox(height: 30),
 
-            // Card treino
-            Card(
-              color: Colors.white,
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: InkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const TreinoDoDiaScreen(),
-                    ),
-                  );
-                },
-                child: SizedBox(
-                  height: 120,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 25),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Expanded(
-                          child: Text.rich(
-                            TextSpan(
-                              text: 'Visualize seu treino de ',
-                              children: [
-                                TextSpan(
-                                  text: 'hoje ',
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                TextSpan(text: '➔'),
-                              ],
-                            ),
-                            style: const TextStyle(fontSize: 20),
-                            softWrap: true,
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        const Text('💪', style: TextStyle(fontSize: 35)),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+            _buildCard(
+              context,
+              icon: '💪',
+              text: 'Visualize seu treino de hoje ➔',
+              onTap: () => onNavigateTo(1),
             ),
             const SizedBox(height: 16),
-
-            // Card nutrição
-            Card(
-              color: Colors.white,
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: InkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const NutritionPage(),
-                    ),
-                  );
-                },
-                child: SizedBox(
-                  height: 120,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 25),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Expanded(
-                          child: Text.rich(
-                            TextSpan(
-                              text: 'Visualize seu ',
-                              children: [
-                                TextSpan(
-                                  text: 'cronograma alimentar',
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                TextSpan(text: '➔'),
-                              ],
-                            ),
-                            style: const TextStyle(fontSize: 19),
-                            softWrap: true,
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        const Text('🍉', style: TextStyle(fontSize: 35)),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+            _buildCard(
+              context,
+              icon: '🍉',
+              text: 'Visualize seu cronograma alimentar ➔',
+              onTap: () => onNavigateTo(2),
             ),
           ],
         ),
       ),
     );
   }
-}
 
-class TreinoDoDiaScreen extends StatelessWidget {
-  const TreinoDoDiaScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const SizedBox(height: 8),
-            const Text(
-              'Seus treinos!',
-              style: TextStyle(fontSize: 18),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 12),
-
-            // Texto de treino
-            RichText(
-              textAlign: TextAlign.center,
-              text: const TextSpan(
-                style: TextStyle(fontSize: 16, color: Colors.black),
-                children: [
-                  TextSpan(text: 'Hoje seu treino é de '),
-                  TextSpan(
-                    text: 'pernas ',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  TextSpan(text: '🦵'),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  Widget _buildCard(BuildContext context,
+      {required String icon, required String text, required VoidCallback onTap}) {
+    return Card(
+      color: Colors.white,
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: InkWell(
+        onTap: onTap,
+        child: SizedBox(
+          height: 120,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 25),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Card(
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Container(
-                    width: 150,
-                    height: 50,
-                    color: Colors.blue,
-                    child: const Center(
-                      child: Text(
-                        'Caixa 1',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
+                Expanded(
+                  child: Text(
+                    text,
+                    style: const TextStyle(fontSize: 19),
                   ),
                 ),
-                const SizedBox(width: 8),
-                Card(
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Container(
-                    width: 150,
-                    height: 50,
-                    color: Colors.green,
-                    child: const Center(
-                      child: Text(
-                        'Caixa 2',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ),
+                const SizedBox(width: 10),
+                Text(icon, style: const TextStyle(fontSize: 35)),
               ],
             ),
-          ],
+          ),
         ),
       ),
     );
-  }
-}
-
-// Telas de exemplo (não estão em uso, mas mantidas para evitar erros)
-class NutritionScreen extends StatelessWidget {
-  const NutritionScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('Nutrition Screen'));
-  }
-}
-
-class ChallengeScreen extends StatelessWidget {
-  const ChallengeScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('Challenge Screen'));
   }
 }
